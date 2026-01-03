@@ -7,7 +7,7 @@
   --accent-hover: #5b4bc4;
   --border-color: #e2e8f0;
   --card-bg: #f8fafc;
-  --font-main: "Inter", sans-serif;
+  --font-main: "Nunito", sans-serif;
   --container-width: 1400px;
 }
 
@@ -1098,7 +1098,7 @@ p {
   text-align: left;
   /* Ensure text alignment is left-aligned */
   height: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   /* Constrain width for better readability */
   margin: 0 auto;
   /* Center the container horizontally */
