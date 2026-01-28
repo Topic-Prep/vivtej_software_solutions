@@ -276,4 +276,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- App Screenshot Carousel Logic ---
+    const scroller = document.querySelector('.screenshot-scroller');
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+
+    if (scroller && prevBtn && nextBtn) {
+        // Scroll amount equal to card width + gap approx
+        const scrollAmount = 300;
+
+        nextBtn.addEventListener('click', () => {
+            scroller.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        });
+
+        prevBtn.addEventListener('click', () => {
+            scroller.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        });
+    }
+
 });
