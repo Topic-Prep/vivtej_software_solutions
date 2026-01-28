@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Email | VivTej Software Solutions</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/png" href="./logo_vivtej.png" />
+    <style>
+      .verification-container {
+        max-width: 600px;
+        margin: 120px auto 60px;
+        padding: 40px;
+        text-align: center;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      }
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #0056b3;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .success-icon {
+        color: #27ae60;
+        margin-bottom: 20px;
+      }
+      .error-icon {
+        color: #e74c3c;
+        margin-bottom: 20px;
+      }
+
+      .cta-button {
+        display: inline-block;
+        background-color: #0056b3;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: 500;
+        margin-top: 20px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .cta-button:hover {
+        background-color: #004494;
+      }
+      h1 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+      p {
+        color: #666;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation (Simplified) -->
+    <nav
+      class="navbar"
+      style="background: white; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1)"
+    >
+      <div class="nav-brand">
+        <a
+          href="index.html"
+          style="display: flex; align-items: center; text-decoration: none"
+        >
+          <img
+            src="./logo_vivtej.png"
+            alt="VivTej Logo"
+            class="brand-logo"
+            style="height: 40px; margin-right: 10px"
+          />
+          <span style="color: #333; font-weight: bold; font-size: 1.2rem"
+            >VivTej Software Solutions</span
+          >
+        </a>
+      </div>
+    </nav>
+
+    <div class="verification-container">
+      <div id="loading">
+        <div class="spinner"></div>
+        <h1>Verifying Email</h1>
+        <p>Please wait while we verify your email address...</p>
+      </div>
+
+      <div id="success" style="display: none">
+        <svg
+          width="80"
+          height="80"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="success-icon"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <h1>Email Verified Successfully!</h1>
+        <p>
+          Your email has been verified. You can now access all features of our
+          platform.
+        </p>
+        <a href="index.html" class="cta-button">Return to Home</a>
+      </div>
+
+      <div id="error" style="display: none">
+        <svg
+          width="80"
+          height="80"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="error-icon"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <h1>Verification Failed</h1>
+        <p id="error-message">
+          The verification link is invalid or has expired.
+        </p>
+        <button onclick="resendVerification()" class="cta-button">
+          Resend Verification Email
+        </button>
+        <br />
+        <a
+          href="index.html"
+          style="
+            display: inline-block;
+            margin-top: 15px;
+            color: #666;
+            text-decoration: none;
+          "
+          >Return to Home</a
+        >
+      </div>
+    </div>
+
+    <script>
+      // Check if running on localhost or production
+      const API_BASE_URL =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+          ? "http://localhost:1710/api/v1"
+          : "https://ca.server.gcp.topicprep.com/api/v1"; // Adjust production URL as needed
+
+      // Get token from URL path: /verify-email/TOKEN
+      // Since we are serving static files, we might be using query param like verify-email.html?token=TOKEN
+      // OR the server rewrites requests.
+      // Let's support both: path segment (if server rewrites) OR query param
+
+      function getToken() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("token")) return urlParams.get("token");
+
+        // Fallback: try to extract from path if using pushState routing or rewrite
+        // clean path
+        const path = window.location.pathname;
+        const parts = path.split("/");
+        // assume last part might be token if acceptable length, else null
+        const lastPart = parts[parts.length - 1];
+        if (
+          lastPart &&
+          lastPart.length > 20 &&
+          lastPart !== "verify-email.html"
+        )
+          return lastPart;
+
+        return null;
+      }
+
+      async function verifyEmail() {
+        const token = getToken();
+
+        if (!token) {
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("error").style.display = "block";
+          document.getElementById("error-message").textContent =
+            "Verification token is missing.";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/auth/verify-email/${token}`,
+          );
+          const data = await response.json();
+
+          document.getElementById("loading").style.display = "none";
+
+          if (data.success) {
+            document.getElementById("success").style.display = "block";
+          } else {
+            document.getElementById("error").style.display = "block";
+            document.getElementById("error-message").textContent =
+              data.error?.message || "Verification failed.";
+          }
+        } catch (error) {
+          console.error(error);
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("error").style.display = "block";
+          document.getElementById("error-message").textContent =
+            "Network error. Please try again later.";
+        }
+      }
+
+      async function resendVerification() {
+        // This generally requires the user to be logged in/identified
+        const authToken = localStorage.getItem("authToken"); // Assuming you store JWT here
+
+        if (!authToken) {
+          alert(
+            "Please log in to your account first to resend the verification email.",
+          );
+          // Redirect to login if existent, or just home
+          window.location.href = "index.html";
+          return;
+        }
+
+        try {
+          const btn = document.querySelector("#error button");
+          const originalText = btn.textContent;
+          btn.textContent = "Sending...";
+          btn.disabled = true;
+
+          const response = await fetch(
+            `${API_BASE_URL}/auth/resend-verification`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+          const data = await response.json();
+
+          if (data.success || response.ok) {
+            alert("Verification email sent! Please check your inbox.");
+          } else {
+            alert(data.error?.message || "Failed to resend email.");
+          }
+
+          btn.textContent = originalText;
+          btn.disabled = false;
+        } catch (error) {
+          alert("Network error. Please try again.");
+          const btn = document.querySelector("#error button");
+          btn.textContent = "Resend Verification Email";
+          btn.disabled = false;
+        }
+      }
+
+      // Run on load
+      verifyEmail();
+    </script>
+  </body>
+</html>

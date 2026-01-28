@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account | VivTej Software Solutions</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="./logo_vivtej.png">
+    <style>
+        .delete-container {
+            max-width: 700px;
+            margin: 120px auto 60px;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h1 { margin-bottom: 20px; color: #333; }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .danger-box {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .danger-box h3 { color: #dc2626; margin-top: 0; }
+        .warning-box h3 { color: #d97706; margin-top: 0; }
+        
+        .otp-wrapper {
+            margin: 30px 0;
+            text-align: center;
+        }
+        .otp-input {
+            font-size: 24px;
+            text-align: center;
+            letter-spacing: 5px;
+            padding: 15px;
+            width: 200px;
+            margin: 10px auto;
+            display: block;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        .otp-input:focus {
+            border-color: #dc2626;
+            outline: none;
+        }
+        
+        .btn {
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+            margin-left: 10px;
+        }
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        ul { padding-left: 20px; margin-top: 10px; }
+        li { margin-bottom: 5px; color: #4b5563; }
+        
+        /* Spinner for loading state inside button or div */
+        .spinner-sm {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation (Simplified) -->
+    <nav class="navbar" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div class="nav-brand">
+            <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+                <img src="./logo_vivtej.png" alt="VivTej Logo" class="brand-logo" style="height: 40px; margin-right: 10px;">
+                <span style="color: #333; font-weight: bold; font-size: 1.2rem;">VivTej Software Solutions</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="delete-container">
+        <h1>Delete Account</h1>
+        
+        <!-- Step 1: Warning and Request -->
+        <div id="step1">
+            <div class="danger-box">
+                <h3>⚠️ Warning: This action cannot be undone</h3>
+                <p>Deleting your account will:</p>
+                <ul>
+                    <li>Permanently remove all your personal information</li>
+                    <li>Delete your profile, preferences, and saved content</li>
+                    <li>Remove access to all your quiz history and statistics</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h3>📋 What we keep</h3>
+                <p>Transaction records and payment history will be retained for legal and tax purposes as required by law.</p>
+            </div>
+
+            <!-- Email Input for Public Flow -->
+            <div id="emailSection" style="margin-top: 20px; display: none;">
+                <label for="email" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Enter your registered email address:</label>
+                <input type="email" id="email" class="otp-input" style="width: 100%; box-sizing: border-box; text-align: left; letter-spacing: normal; font-size: 16px; padding: 12px;" placeholder="name@example.com">
+            </div>
+
+            <p style="margin-top: 20px; color: #555;">If you're sure you want to proceed, click the button below. We'll send a verification code to your email to confirm your identity.</p>
+
+            <div style="margin-top: 20px;">
+                <button class="btn btn-danger" onclick="requestDeletion()" id="requestBtn">Send Verification Code</button>
+                <a href="index.html" class="btn btn-secondary" style="text-decoration: none;">Cancel</a>
+            </div>
+        </div>
+
+        <!-- Step 2: OTP Verification -->
+        <div id="step2" style="display: none;">
+            <div class="danger-box" style="background: #fff; border-color: #dc2626;">
+                <h3 style="text-align: center; color: #333;">Enter Verification Code</h3>
+                <p style="text-align: center;">We've sent a 6-digit verification code to your email.</p>
+                
+                <div class="otp-wrapper">
+                    <input type="text" id="otp" class="otp-input" maxlength="6" placeholder="000000" pattern="[0-9]{6}" autocomplete="off">
+                    <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 5px;">Code expires in 15 minutes</p>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-danger" onclick="verifyAndDelete()" id="verifyBtn">Confirm Deletion</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:1710/api/v1' 
+            : 'https://ca.server.gcp.topicprep.com/api/v1';
+
+        // Check authentication state
+        const authToken = localStorage.getItem('authToken');
+
+        // Initial check
+        window.onload = function() {
+            if (!authToken) {
+                // Not logged in? Show email input field instead of error
+                document.getElementById('emailSection').style.display = 'block';
+            }
+        };
+
+        async function requestDeletion() {
+            const btn = document.getElementById('requestBtn');
+            const emailInput = document.getElementById('email');
+            
+            // Validate email if not logged in
+            let bodyData = {};
+            if (!authToken) {
+                const email = emailInput.value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    alert('Please enter a valid email address.');
+                    return;
+                }
+                bodyData = { email };
+            }
+
+            btn.innerHTML = '<span class="spinner-sm"></span> Sending...';
+            btn.disabled = true;
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/request-deletion`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(bodyData)
+                });
+
+                const data = await response.json();
+
+                if (data.success || response.ok) {
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    // Focus OTP input
+                    setTimeout(() => document.getElementById('otp').focus(), 100);
+                } else {
+                    alert(data.error?.message || 'Failed to send verification code. Please try again.');
+                    btn.innerHTML = 'Send Verification Code';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Network error. Please try again.');
+                btn.innerHTML = 'Send Verification Code';
+                btn.disabled = false;
+            }
+        }
+
+        async function verifyAndDelete() {
+            const otp = document.getElementById('otp').value;
+            const emailInput = document.getElementById('email');
+            const btn = document.getElementById('verifyBtn');
+
+            if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                alert('Please enter a valid 6-digit code');
+                return;
+            }
+
+            btn.innerHTML = '<span class="spinner-sm"></span> Deleting...';
+            btn.disabled = true;
+            
+            let bodyData = { otp };
+            if (!authToken) {
+                bodyData.email = emailInput.value.trim();
+            }
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/verify-deletion`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(bodyData)
+                });
+
+                const data = await response.json();
+
+                if (data.success || response.ok) {
+                    // Clear local storage
+                    if (authToken) {
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('user'); 
+                    }
+                    
+                    document.querySelector('.delete-container').innerHTML = `
+                        <div style="text-align: center;">
+                            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2" style="margin-bottom: 20px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <h1>Account Deleted</h1>
+                            <p>Your account has been successfully deleted.</p>
+                            <p>We're sorry to see you go.</p>
+                            <a href="index.html" class="btn btn-primary" style="background: #0056b3; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 20px; display: inline-block;">Return to Home</a>
+                        </div>
+                    `;
+                } else {
+                    alert(data.error?.message || 'Invalid verification code. Please try again.');
+                    btn.innerHTML = 'Confirm Deletion';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Network error. Please try again.');
+                btn.innerHTML = 'Confirm Deletion';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
